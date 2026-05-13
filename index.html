@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة أرباح النظام</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-light: #f4f7f6;
+            --primary-dark: #1e1e1e;
+            --green-success: #27ae60;
+            --white: #ffffff;
+            --gray-text: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* الجزء العلوي (الرسم البياني) */
+        .chart-section {
+            padding: 20px;
+            text-align: center;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .chart-header h4 { margin: 0; font-size: 0.9rem; color: var(--primary-dark); }
+
+        /* حقل البحث (IBAN) */
+        .search-box {
+            background: var(--primary-dark);
+            color: white;
+            padding: 20px;
+            margin: 15px;
+            border-radius: 15px;
+        }
+        .search-box label { font-size: 0.8rem; display: block; margin-bottom: 8px; }
+        .input-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+        }
+        .input-wrapper input {
+            border: none;
+            width: 100%;
+            padding: 8px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+        .btn-search {
+            width: 100%;
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* بطاقة العميل */
+        .user-card {
+            background: #fff;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: #e1f5fe;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            margin-left: 15px;
+        }
+        .user-info h5 { margin: 0; font-size: 0.9rem; }
+        .user-info span { font-size: 0.7rem; color: var(--green-success); }
+
+        /* تفاصيل الأرقام */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 15px;
+        }
+        .stat-item {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+        }
+        .stat-item label { font-size: 0.65rem; color: var(--gray-text); display: block; }
+        .stat-item b { font-size: 0.8rem; word-break: break-all; }
+
+        /* إجمالي الأرباح */
+        .total-box {
+            background: #f1fcf4;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #d4edda;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-box b { color: var(--green-success); font-size: 1.1rem; }
+
+        /* جدول آخر العمليات */
+        .transactions-section { padding: 15px; }
+        .transactions-section h4 { font-size: 0.9rem; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th { text-align: right; color: var(--gray-text); padding: 8px 0; border-bottom: 1px solid #eee; }
+        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+        .pos { color: var(--green-success); font-weight: bold; }
+        .neg { color: #e74c3c; font-weight: bold; }
+
+        .copy-btn {
+            background: #eee;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="chart-section">
+        <div class="chart-header">
+            <h4>نمو الأرباح</h4>
+            <button class="copy-btn" onclick="copy('تم تحقيق نمو قياسي هذا الشهر')">نسخ</button>
+        </div>
+        <canvas id="mainChart" height="120"></canvas>
+    </div>
+
+    <div class="search-box">
+        <label>الاستعلام عن الأرباح</label>
+        <div class="input-wrapper">
+            <input type="text" value="SA19 8000 0868 6080 1443 7809">
+            <i class="fas fa-search" style="color: #ccc;"></i>
+        </div>
+        <button class="btn-search">استعلام الآن</button>
+    </div>
+
+    <div class="user-card">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <div class="user-info">
+            <h5>محمد نجيب أحمد أحمد حيدره</h5>
+            <span><i class="fas fa-check-circle"></i> مشترك نشط في النظام</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-item">
+            <label>رقم الحساب البنكي</label>
+            <b>077090010006084437809</b>
+        </div>
+        <div class="stat-item">
+            <label>البنك</label>
+            <b>الراجحي</b>
+        </div>
+        <div class="stat-item">
+            <label>مبلغ الاشتراك</label>
+            <b>SAR 1,000</b>
+        </div>
+        <div class="stat-item">
+            <label>رقم الآيبان</label>
+            <b>SA19 8000 ...7809</b>
+        </div>
+    </div>
+
+    <div class="total-box">
+        <span>إجمالي الأرباح</span>
+        <b>SAR 40,300</b>
+    </div>
+
+    <div class="transactions-section">
+        <h4>آخر العمليات</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>المشترك</th>
+                    <th>العملية</th>
+                    <th>المبلغ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>فهد العتيبي</td>
+                    <td>توزيع أرباح</td>
+                    <td class="pos">SAR 5,000+</td>
+                </tr>
+                <tr>
+                    <td>منى السالم</td>
+                    <td>اشتراك جديد</td>
+                    <td class="neg">SAR 1,750-</td>
+                </tr>
+                <tr>
+                    <td>طارق الحارثي</td>
+                    <td>توزيع أرباح</td>
+                    <td class="pos">SAR 45,000+</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function copy(text) {
+        navigator.clipboard.writeText(text);
+        alert("تم نسخ النص!");
+    }
+
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو'],
+            datasets: [{
+                data: [3000, 2500, 4000, 3200, 4500, 4200, 5000],
+                borderColor: '#000',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { x: { display: true }, y: { display: false } }
+        }
+    });
+</script>
+
+</body>
+</html>
