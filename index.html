@@ -3,155 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الأرباح التفاعلي</title>
+    <title>لوحة التحكم الاحترافية - التعديل المباشر</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --bg: #f4f7f6; --dark: #1e1e1e; --green: #27ae60; --orange: #e67e22; --white: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 450px; margin: 0 auto; background: var(--white); border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        :root { --main-bg: #f4f7f6; --card-bg: #ffffff; --text-dark: #1a1a1a; --primary: #1a73e8; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--main-bg); margin: 0; padding: 10px; }
+        .app { max-width: 450px; margin: 0 auto; background: var(--card-bg); border-radius: 25px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #333; position: relative; }
         
-        /* ميزة التعديل المباشر */
-        [contenteditable="true"]:hover { background: #fffde7; border-radius: 4px; outline: 1px dashed #fbc02d; }
+        /* ميزة التعديل السحري */
+        [contenteditable="true"] { border: 1px transparent dashed; transition: 0.2s; cursor: edit; }
+        [contenteditable="true"]:focus { background: #fff9c4; border-color: var(--warning); outline: none; border-radius: 4px; }
 
-        .chart-card { padding: 20px; text-align: center; }
-        .search-area { background: var(--dark); padding: 20px; margin: 15px; border-radius: 15px; color: white; }
-        .input-group { background: white; border-radius: 8px; display: flex; align-items: center; padding: 5px 10px; margin-bottom: 10px; }
-        .input-group input { border: none; width: 100%; padding: 10px; outline: none; font-size: 0.8rem; color: #333; }
+        /* شريط الأدوات المخفي للمدير فقط */
+        .admin-toolbar { background: #333; color: white; padding: 10px; font-size: 0.7rem; display: flex; justify-content: space-around; }
         
-        .btn-main { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; background: white; color: black; transition: 0.3s; }
-        .btn-main:active { background: #eee; transform: scale(0.98); }
+        .header-chart { padding: 20px; text-align: center; }
+        .search-box { background: #1a1a1b; padding: 20px; margin: 15px; border-radius: 20px; color: white; }
+        .input-field { background: white; border-radius: 10px; display: flex; align-items: center; padding: 8px 15px; margin-bottom: 12px; }
+        .input-field input { border: none; width: 100%; outline: none; font-size: 0.85rem; color: #333; }
+        .btn-query { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: white; color: black; }
 
-        .user-info { display: flex; align-items: center; padding: 15px; border: 1px solid #eee; margin: 0 15px; border-radius: 15px; }
-        .avatar { width: 50px; height: 50px; background: #e1f5fe; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-left: 15px; }
+        .user-profile { display: flex; align-items: center; padding: 15px; border: 1px solid #eee; margin: 15px; border-radius: 15px; background: #fafafa; }
+        .avatar { width: 50px; height: 50px; background: #e3f2fd; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-left: 15px; color: var(--primary); }
         
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .data-item { background: #f9f9f9; padding: 10px; border-radius: 12px; border: 1px solid #f0f0f0; }
-        .data-item small { color: #888; font-size: 0.65rem; display: block; }
-        .data-item b { font-size: 0.8rem; display: block; min-height: 1.2em; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; }
+        .stat-box { background: #fff; padding: 12px; border-radius: 15px; border: 1px solid #eee; }
+        .stat-box small { color: #888; font-size: 0.7rem; display: block; }
+        .stat-box b { font-size: 0.85rem; word-break: break-all; }
 
-        .alert-box { background: #fff5eb; border: 1px solid #ffe0bd; margin: 15px; padding: 15px; border-radius: 15px; display: flex; align-items: center; }
-        .btn-activate { background: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; font-size: 0.8rem; cursor: pointer; }
+        .total { display: flex; justify-content: space-between; align-items: center; padding: 20px 15px; border-top: 1px solid #eee; margin-top: 10px; }
+        .total b { color: var(--success); font-size: 1.4rem; }
 
-        .total-display { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 0 15px; border-top: 1px solid #eee; }
-        .total-display b { color: var(--green); font-size: 1.2rem; }
+        .alert-orange { background: #fff8f1; border: 1px solid #ffe8cc; margin: 15px; padding: 15px; border-radius: 18px; display: flex; align-items: center; justify-content: space-between; }
+        .btn-pay { background: var(--danger); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
 
-        .history { padding: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        td, th { padding: 12px 5px; border-bottom: 1px solid #f5f5f5; text-align: right; }
-        .plus { color: var(--green); font-weight: bold; }
-        .minus { color: #e74c3c; font-weight: bold; }
+        .table-area { padding: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { text-align: right; color: #888; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        td { padding: 12px 0; border-bottom: 1px solid #f9f9f9; }
+        .up { color: var(--success); font-weight: bold; }
+        .down { color: var(--danger); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="chart-card">
-        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:10px;">
-            <span contenteditable="true">نمو الأرباح</span>
-            <button onclick="alert('تم نسخ الرابط!')" style="border:none; background:none; color:var(--green); cursor:pointer;"><i class="fas fa-copy"></i></button>
-        </div>
-        <canvas id="growthChart" height="150"></canvas>
+<div class="app">
+    <div class="admin-toolbar">
+        <span onclick="updateChart()">🔄 تحديث الرسم</span>
+        <span onclick="addNewRow()">➕ إضافة مشترك</span>
+        <span onclick="savePage()">💾 حفظ التعديلات</span>
     </div>
 
-    <div class="search-area">
-        <div class="input-group">
-            <input type="text" id="ibanSearch" value="SA19 8000 0868 6080 1443 7809">
-            <i class="fas fa-search" style="color: #999;"></i>
-        </div>
-        <button class="btn-main" onclick="startSearch()">استعلام الآن</button>
+    <div class="header-chart">
+        <h4 contenteditable="true">تحليل نمو الأرباح</h4>
+        <canvas id="liveChart" height="150"></canvas>
     </div>
 
-    <div id="resultArea" style="display: none;">
-        <div class="user-info">
-            <div class="avatar"><i class="fas fa-user-check" style="color: #03a9f4;"></i></div>
+    <div class="search-box">
+        <div class="input-field">
+            <input type="text" id="ibanInp" value="SA19 8000 0868 6080 1443 7809">
+            <i class="fas fa-search" style="color:#ccc"></i>
+        </div>
+        <button class="btn-query" onclick="doSearch()">استعلام الآن</button>
+    </div>
+
+    <div id="content" style="display:none">
+        <div class="user-profile">
+            <div class="avatar"><i class="fas fa-user-circle fa-2x"></i></div>
             <div>
-                <h4 contenteditable="true" style="margin:0; font-size:0.9rem;">محمد نجيب أحمد أحمد حيدره</h4>
-                <span contenteditable="true" style="color: var(--green); font-size: 0.7rem;">● مشترك نشط في النظام</span>
+                <h4 contenteditable="true" style="margin:0">محمد نجيب أحمد أحمد حيدره</h4>
+                <span contenteditable="true" style="color:var(--success); font-size:0.7rem">● حساب موثق ونشط</span>
             </div>
         </div>
 
-        <div class="data-grid">
-            <div class="data-item"><small>رقم الحساب البنكي</small><b contenteditable="true">077090010006084437809</b></div>
-            <div class="data-item"><small>اسم البنك</small><b contenteditable="true">الراجحي</b></div>
-            <div class="data-item"><small>مبلغ الاشتراك</small><b contenteditable="true">SAR 1,000</b></div>
-            <div class="data-item"><small>الآيبان</small><b contenteditable="true">SA19 8000 ...7809</b></div>
+        <div class="stats">
+            <div class="stat-box"><small>رقم الحساب</small><b contenteditable="true">077090010006084437809</b></div>
+            <div class="stat-box"><small>البنك</small><b contenteditable="true">الراجحي</b></div>
+            <div class="stat-box"><small>مبلغ الاشتراك</small><b contenteditable="true">SAR 1,000</b></div>
+            <div class="stat-box"><small>الآيبان</small><b contenteditable="true">SA19 8000 ...7809</b></div>
         </div>
 
-        <div class="total-display">
-            <span>إجمالي الأرباح</span>
+        <div class="total">
+            <span>إجمالي الأرباح المتاحة</span>
             <b contenteditable="true">SAR 40,300</b>
         </div>
 
-        <div class="alert-box">
-            <div class="alert-content" style="flex-grow:1">
-                <b contenteditable="true">رسوم النظام المستحقة</b>
-                <span contenteditable="true">تستخدم لتنشيط النظام واستلام أرباحك</span>
+        <div class="alert-orange">
+            <div style="flex:1">
+                <b contenteditable="true" style="color:#d35400; font-size:0.85rem; display:block">رسوم النظام المستحقة</b>
+                <span contenteditable="true" style="font-size:0.7rem">يجب دفع الرسوم لتفعيل السحب</span>
             </div>
-            <div style="text-align: left;">
-                <div contenteditable="true" style="color: #ff4d4d; font-weight: bold; font-size: 1.1rem; margin-bottom:5px;">SAR 2030</div>
-                <button class="btn-activate" onclick="activateSystem()">تنشيط الآن</button>
+            <div style="text-align:left">
+                <div contenteditable="true" style="color:var(--danger); font-weight:bold; margin-bottom:5px">SAR 2030</div>
+                <button class="btn-pay" onclick="alert('جاري التحويل للبنك...')">تنشيط الآن</button>
             </div>
         </div>
 
-        <div class="history">
-            <h4 style="margin-bottom:10px; font-size:0.9rem;">آخر العمليات</h4>
-            <table>
+        <div class="table-area">
+            <h4 contenteditable="true">سجل العمليات الأخير</h4>
+            <table id="mainTable">
                 <thead><tr><th>المشترك</th><th>العملية</th><th>المبلغ</th></tr></thead>
-                <tbody id="tableBody">
-                    <tr><td contenteditable="true">فهد العتيبي</td><td contenteditable="true">توزيع أرباح</td><td class="plus" contenteditable="true">SAR 5,000+</td></tr>
-                    <tr><td contenteditable="true">منى السالم</td><td contenteditable="true">اشتراك جديد</td><td class="minus" contenteditable="true">SAR 1,750-</td></tr>
+                <tbody>
+                    <tr><td contenteditable="true">فهد العتيبي</td><td contenteditable="true">توزيع أرباح</td><td class="up" contenteditable="true">SAR 5,000+</td></tr>
+                    <tr><td contenteditable="true">منى السالم</td><td contenteditable="true">اشتراك جديد</td><td class="down" contenteditable="true">SAR 1,750-</td></tr>
                 </tbody>
             </table>
-            <button onclick="addRow()" style="width:100%; margin-top:10px; background:none; border:1px dashed #ccc; padding:5px; font-size:0.7rem; cursor:pointer;">+ إضافة عملية جديدة</button>
         </div>
     </div>
 </div>
 
 <script>
-    // وظيفة البحث (الاستعلام)
-    function startSearch() {
-        const btn = document.querySelector('.btn-main');
+    // وظيفة الاستعلام
+    function doSearch() {
+        const btn = document.querySelector('.btn-query');
         btn.innerText = "جاري البحث...";
         setTimeout(() => {
-            document.getElementById('resultArea').style.display = 'block';
+            document.getElementById('content').style.display = 'block';
             btn.innerText = "استعلام الآن";
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }, 1000);
+        }, 600);
     }
 
-    // وظيفة التنشيط
-    function activateSystem() {
-        if(confirm("هل تريد الانتقال لصفحة دفع الرسوم لتنشيط حسابك؟")) {
-            alert("سيتم تحويلك لبوابة الدفع...");
+    // إضافة سطر جديد للجدول مباشرة
+    function addNewRow() {
+        const table = document.getElementById('mainTable').getElementsByTagName('tbody')[0];
+        const row = table.insertRow();
+        row.innerHTML = '<td contenteditable="true">اسم جديد</td><td contenteditable="true">عملية</td><td class="up" contenteditable="true">SAR 0+</td>';
+    }
+
+    // تحديث الرسم البياني عشوائياً أو يدوياً
+    function updateChart() {
+        myChart.data.datasets[0].data = Array.from({length: 7}, () => Math.floor(Math.random() * 100));
+        myChart.update();
+    }
+
+    // ميزة الحفظ: تقوم بحفظ التعديلات في ذاكرة المتصفح (Local Storage)
+    function savePage() {
+        const pageData = document.body.innerHTML;
+        localStorage.setItem('savedPage', pageData);
+        alert("✅ تم حفظ التعديلات في المتصفح! ستظهر حتى لو أغلقت الصفحة.");
+    }
+
+    // استرجاع البيانات المحفوظة عند فتح الصفحة
+    window.onload = function() {
+        if(localStorage.getItem('savedPage')) {
+            // يمكنك تفعيل هذا السطر إذا أردت استرجاع ما حفظته تلقائياً
+            // document.body.innerHTML = localStorage.getItem('savedPage');
         }
     }
 
-    // إضافة سطر جديد للجدول
-    function addRow() {
-        const table = document.getElementById('tableBody');
-        const newRow = table.insertRow();
-        newRow.innerHTML = '<td contenteditable="true">اسم جديد</td><td contenteditable="true">عملية جديدة</td><td class="plus" contenteditable="true">SAR 0+</td>';
-    }
-
-    // الرسم البياني
-    const ctx = document.getElementById('growthChart').getContext('2d');
-    new Chart(ctx, {
+    // رسم بياني احترافي
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    let myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو'],
+            labels: ['1', '2', '3', '4', '5', '6', '7'],
             datasets: [{
-                data: [30, 20, 50, 40, 65, 55, 80],
-                borderColor: '#000',
-                borderWidth: 2,
+                data: [45, 30, 60, 50, 80, 65, 95],
+                borderColor: '#1a1a1b',
                 fill: true,
-                backgroundColor: 'rgba(0,0,0,0.02)',
+                backgroundColor: 'rgba(26, 115, 232, 0.05)',
                 tension: 0.4,
-                pointRadius: 0
+                pointRadius: 2
             }]
         },
         options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: false } } }
     });
 </script>
+
 </body>
 </html>
